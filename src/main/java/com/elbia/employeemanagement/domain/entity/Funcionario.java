@@ -2,10 +2,12 @@ package com.elbia.employeemanagement.domain.entity;
 
 import com.elbia.employeemanagement.domain.constants.EmployeeStatus;
 import lombok.Data;
+import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 
 @Data
@@ -22,20 +24,22 @@ public class Funcionario implements Serializable {
     private EmployeeStatus status;
     private BigDecimal salario;
     private BigDecimal budget;
+    private LocalDate rejectionDate;
     @ManyToOne
     @JoinColumn(name = "id_departamento",referencedColumnName = "id",nullable = false)
     private Departamento departamento;
 
-    BigDecimal totalSalarios = departamento.getTotalSalarios().add(budget);
-    if totalSalarios.compareTo(departamento.getBudget()) <= 0 {
-        this.status = EmployeeStatus.ACEITO;
+    public void aplicarRegraDois () {
+        BigDecimal totalSalarios = departamento.getTotalSalarios().add(budget);
+        if (totalSalarios.compareTo(departamento.getBudget()) <= 0) {
+            this.status = EmployeeStatus.ATIVO;
 
-    } else {
+        } else {
 
-        this.status = EmployeeStatus.REJEITADO_POR_FALTA_DE_RECURSOS;
-        this.rejectionDate()= new Date();
+            this.status = EmployeeStatus.REJEITADO_POR_FALTA_DE_RECURSOS;
+            this.rejectionDate = LocalDate.now();
+        }
     }
-
     public Long getId() {
         return id;
     }
@@ -65,7 +69,7 @@ public class Funcionario implements Serializable {
     }
 
     public void setBudget(BigDecimal newBudget) {
-        BigDecimal totalSalarios = departamento.getTotalSalarios().subtract(budget()).add(newBudget);
+        BigDecimal totalSalarios = departamento.getTotalSalarios().subtract(budget).add(newBudget);
         if (totalSalarios.compareTo(departamento.getBudget()) <= 0) {
             this.budget = newBudget;
         } else {
