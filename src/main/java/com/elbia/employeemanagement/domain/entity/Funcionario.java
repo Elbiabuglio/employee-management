@@ -1,8 +1,7 @@
 package com.elbia.employeemanagement.domain.entity;
 
-import com.elbia.employeemanagement.domain.constants.EmployeeStatus;
-import lombok.Data;
-import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
+import com.elbia.employeemanagement.domain.constants.FuncionarioStatus;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -10,7 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "TB_FUNCIONARIO")
 public class Funcionario implements Serializable {
@@ -20,61 +22,17 @@ public class Funcionario implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String nome;
+
+    @Column(name = "cpf", nullable = false,unique = true)
     private String cpf;
-    private EmployeeStatus status;
+    private FuncionarioStatus status;
     private BigDecimal salario;
-    private BigDecimal budget;
     private LocalDate rejectionDate;
     @ManyToOne
     @JoinColumn(name = "id_departamento",referencedColumnName = "id",nullable = false)
     private Departamento departamento;
 
-    public void aplicarRegraDois () {
-        BigDecimal totalSalarios = departamento.getTotalSalarios().add(budget);
-        if (totalSalarios.compareTo(departamento.getBudget()) <= 0) {
-            this.status = EmployeeStatus.ATIVO;
-
-        } else {
-
-            this.status = EmployeeStatus.REJEITADO_POR_FALTA_DE_RECURSOS;
-            this.rejectionDate = LocalDate.now();
-        }
-    }
-    public Long getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public EmployeeStatus getStatus() {
-        return getStatus();
-    }
-
-    public double getBudget() {
-        return getBudget();
-    }
-
-    public Departamento getDepartamento() {
-        return departamento;
-    }
-
-    public Data getDataRejection() {
-        return getDataRejection();
-    }
-
-    public void setBudget(BigDecimal newBudget) {
-        BigDecimal totalSalarios = departamento.getTotalSalarios().subtract(budget).add(newBudget);
-        if (totalSalarios.compareTo(departamento.getBudget()) <= 0) {
-            this.budget = newBudget;
-        } else {
-            System.out.println("Não é possível aumentar o salário. Total de salários excede o orçamento do departamento.");
-        }
+    public void aumentaSalario(BigDecimal valor){
+        this.salario = salario.add(valor);
     }
 }
-
